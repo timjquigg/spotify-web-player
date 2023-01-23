@@ -14,7 +14,6 @@ export default function App() {
     }
     getToken();
   }, []);
-  console.log({ token });
 
   return <>{token === "" ? <Login /> : <WebPlayback token={token} />}</>;
 }
