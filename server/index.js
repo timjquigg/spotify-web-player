@@ -1,14 +1,14 @@
 // Imports
 const express = require("express");
-const request = require("request");
+const axios = require("axios");
 require("dotenv").config({ path: ".env.local" });
 const morgan = require("morgan");
 const { generateRandomString } = require("../lib/random");
 
 // Env Variables
 const port = process.env.SERVER_PORT;
-const reactPort = process.env.REACT_PORT;
-const serverAddress = process.env.SERVER_ADDRESS;
+// const reactPort = process.env.REACT_PORT;
+// const serverAddress = process.env.SERVER_ADDRESS;
 const spotify_client_id = process.env.SPOTIFY_CLIENT_ID;
 const spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotify_redirect_uri = `http://localhost:3000/auth/callback`;
@@ -41,30 +41,36 @@ app.get("/auth/login", (req, res) => {
 
 app.get("/auth/callback", (req, res) => {
   const code = req.query.code;
-  const authOptions = {
-    url: "https://accounts.spotify.com/api/token",
-    form: {
-      code: code,
-      redirect_uri: spotify_redirect_uri,
-      grant_type: "authorization_code",
-    },
-    headers: {
-      Authorization:
-        "Basic " +
-        Buffer.from(spotify_client_id + ":" + spotify_client_secret).toString(
-          "base64"
-        ),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    json: true,
+  const url = "https://accounts.spotify.com/api/token";
+  const data = {
+    code: code,
+    redirect_uri: spotify_redirect_uri,
+    grant_type: "authorization_code",
   };
+  const headers = {
+    Authorization:
+      "Basic " +
+      Buffer.from(spotify_client_id + ":" + spotify_client_secret).toString(
+        "base64"
+      ),
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  // resposneType: "json",
 
-  request.post(authOptions, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      access_token = body.access_token;
+  axios({
+    method: "post",
+    url: url,
+    data: data,
+    headers: headers,
+    responseType: "json",
+  })
+    .then((response) => {
+      access_token = response.data.access_token;
       res.redirect("/");
-    }
-  });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 });
 
 app.get("/auth/token", (req, res) => {
