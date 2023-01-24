@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import transferPlayback from "../helpers/transferPlayback";
 
 const track = {
   name: "",
@@ -35,6 +36,7 @@ export default function useWebplayer(token) {
 
       player.addListener("ready", ({ device_id }) => {
         console.log("Ready with Device ID", device_id);
+        transferPlayback(device_id, token);
       });
 
       player.addListener("not_ready", ({ device_id }) => {
